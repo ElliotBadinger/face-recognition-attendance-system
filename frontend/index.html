@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Recognition App</title>
+    <title>Face Recognition Attendance System</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         body {
@@ -12,28 +12,84 @@
             margin: 0 auto;
             padding: 20px;
         }
-        #result, #userResult {
-            margin-top: 20px;
+        .section {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #result, #userResult, #attendanceResult, #notificationResult, #analyticsResult {
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>Face Recognition App</h1>
+    <h1>Face Recognition Attendance System</h1>
     
-    <h2>Face Recognition</h2>
-    <input type="file" id="imageInput" accept="image/*">
-    <button onclick="recognizeFace()">Recognize Face</button>
-    <div id="result"></div>
+    <div class="section">
+        <h2>Authentication</h2>
+        <input type="text" id="usernameInput" placeholder="Username">
+        <input type="password" id="passwordInput" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <div id="authResult"></div>
+    </div>
 
-    <h2>User Management</h2>
-    <input type="text" id="nameInput" placeholder="Name">
-    <input type="email" id="emailInput" placeholder="Email">
-    <button onclick="createUser()">Create User</button>
-    <input type="number" id="userIdInput" placeholder="User ID">
-    <button onclick="getUser()">Get User</button>
-    <div id="userResult"></div>
+    <div class="section">
+        <h2>Face Recognition</h2>
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="recognizeFace()">Recognize Face</button>
+        <div id="result"></div>
+    </div>
+
+    <div class="section">
+        <h2>User Management</h2>
+        <input type="text" id="nameInput" placeholder="Name">
+        <input type="email" id="emailInput" placeholder="Email">
+        <button onclick="createUser()">Create User</button>
+        <input type="number" id="userIdInput" placeholder="User ID">
+        <button onclick="getUser()">Get User</button>
+        <div id="userResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>Attendance</h2>
+        <button onclick="getAttendance()">Get Attendance</button>
+        <div id="attendanceResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>Notifications</h2>
+        <button onclick="getNotifications()">Get Notifications</button>
+        <div id="notificationResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>Analytics</h2>
+        <button onclick="getAnalytics()">Get Analytics</button>
+        <div id="analyticsResult"></div>
+    </div>
 
     <script>
+        let authToken = '';
+        const apiUrl = 'http://localhost:3000'; // API Gateway URL
+
+        async function login() {
+            const username = document.getElementById('usernameInput').value;
+            const password = document.getElementById('passwordInput').value;
+            const authResultDiv = document.getElementById('authResult');
+
+            try {
+                const response = await axios.post(`${apiUrl}/auth/token`, {
+                    username: username,
+                    password: password
+                });
+                authToken = response.data.access_token;
+                authResultDiv.innerHTML = 'Login successful!';
+            } catch (error) {
+                console.error('Error:', error);
+                authResultDiv.innerHTML = 'Login failed. Please try again.';
+            }
+        }
+
         async function recognizeFace() {
             const imageInput = document.getElementById('imageInput');
             const resultDiv = document.getElementById('result');
@@ -47,9 +103,10 @@
             formData.append('file', imageInput.files[0]);
 
             try {
-                const response = await axios.post('http://localhost:8000/recognize', formData, {
+                const response = await axios.post(`${apiUrl}/face-recognition/recognize`, formData, {
                     headers: {
-                        'Content-Type': 'multipart/form-data'
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
 
@@ -71,9 +128,13 @@
             const userResultDiv = document.getElementById('userResult');
 
             try {
-                const response = await axios.post('http://localhost:8001/users', {
+                const response = await axios.post(`${apiUrl}/user-management/users`, {
                     name: nameInput.value,
                     email: emailInput.value
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
                 });
 
                 userResultDiv.innerHTML = `<h3>User Created:</h3><p>ID: ${response.data.id}, Name: ${response.data.name}, Email: ${response.data.email}</p>`;
@@ -88,11 +149,74 @@
             const userResultDiv = document.getElementById('userResult');
 
             try {
-                const response = await axios.get(`http://localhost:8001/users/${userIdInput.value}`);
+                const response = await axios.get(`${apiUrl}/user-management/users/${userIdInput.value}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
                 userResultDiv.innerHTML = `<h3>User Details:</h3><p>ID: ${response.data.id}, Name: ${response.data.name}, Email: ${response.data.email}</p>`;
             } catch (error) {
                 console.error('Error:', error);
                 userResultDiv.innerHTML = 'An error occurred while fetching the user.';
+            }
+        }
+
+        async function getAttendance() {
+            const attendanceResultDiv = document.getElementById('attendanceResult');
+
+            try {
+                const response = await axios.get(`${apiUrl}/attendance/user/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                let attendanceHtml = '<h3>Attendance Records:</h3>';
+                response.data.forEach(record => {
+                    attendanceHtml += `<p>Date: ${record.timestamp}, Location: ${record.location}</p>`;
+                });
+                attendanceResultDiv.innerHTML = attendanceHtml;
+            } catch (error) {
+                console.error('Error:', error);
+                attendanceResultDiv.innerHTML = 'An error occurred while fetching attendance records.';
+            }
+        }
+
+        async function getNotifications() {
+            const notificationResultDiv = document.getElementById('notificationResult');
+
+            try {
+                const response = await axios.get(`${apiUrl}/notification/user/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                let notificationHtml = '<h3>Notifications:</h3>';
+                response.data.forEach(notification => {
+                    notificationHtml += `<p>${notification.message} (${notification.timestamp})</p>`;
+                });
+                notificationResultDiv.innerHTML = notificationHtml;
+            } catch (error) {
+                console.error('Error:', error);
+                notificationResultDiv.innerHTML = 'An error occurred while fetching notifications.';
+            }
+        }
+
+        async function getAnalytics() {
+            const analyticsResultDiv = document.getElementById('analyticsResult');
+
+            try {
+                const response = await axios.get(`${apiUrl}/analytics/attendance/summary`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                analyticsResultDiv.innerHTML = `<h3>Attendance Summary:</h3>
+                    <p>Total Records: ${response.data.total_records}</p>
+                    <p>Unique Users: ${response.data.unique_users}</p>
+                    <p>Locations: ${response.data.locations.join(', ')}</p>`;
+            } catch (error) {
+                console.error('Error:', error);
+                analyticsResultDiv.innerHTML = 'An error occurred while fetching analytics.';
             }
         }
     </script>
