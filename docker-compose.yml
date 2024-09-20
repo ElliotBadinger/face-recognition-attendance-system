@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  api_gateway:
+    build: ./backend/api_gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - face_recognition
+      - user_management
+      - authentication
+      - attendance
+      - notification
+      - analytics
+    environment:
+      - FACE_RECOGNITION_URL=http://face_recognition:8000
+      - USER_MANAGEMENT_URL=http://user_management:8000
+      - AUTHENTICATION_URL=http://authentication:8000
+      - ATTENDANCE_URL=http://attendance:8000
+      - NOTIFICATION_URL=http://notification:8000
+      - ANALYTICS_URL=http://analytics:8000
+
+  face_recognition:
+    build: ./backend/services/face_recognition
+    volumes:
+      - ./frontend/known_faces:/app/known_faces
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq/
+      - AUTHENTICATION_URL=http://authentication:8000
+      - ATTENDANCE_URL=http://attendance:8000
+    depends_on:
+      - rabbitmq
+      - mongodb
+
+  user_management:
+    build: ./backend/services/user_management
+    environment:
+      - DATABASE_URL=postgresql://facerecognition:facerecognition@postgres/facerecognition
+      - REDIS_URL=redis://redis:6379/0
+      - AUTHENTICATION_URL=http://authentication:8000
+      - NOTIFICATION_URL=http://notification:8000
+    depends_on:
+      - postgres
+      - redis
+
+  authentication:
+    build: ./backend/services/authentication
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DATABASE_URL=postgresql://facerecognition:facerecognition@postgres/facerecognition
+    depends_on:
+      - postgres
+
+  attendance:
+    build: ./backend/services/attendance
+    environment:
+      - DATABASE_URL=postgresql://facerecognition:facerecognition@postgres/facerecognition
+      - AUTHENTICATION_URL=http://authentication:8000
+    depends_on:
+      - postgres
+
+  notification:
+    build: ./backend/services/notification
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq/
+    depends_on:
+      - rabbitmq
+
+  analytics:
+    build: ./backend/services/analytics
+    environment:
+      - DATABASE_URL=postgresql://facerecognition:facerecognition@postgres/facerecognition
+      - AUTHENTICATION_URL=http://authentication:8000
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: facerecognition
+      POSTGRES_PASSWORD: facerecognition
+      POSTGRES_DB: facerecognition
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:4.4
+    volumes:
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:6
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  postgres_data:
+  mongodb_data:
+
+networks:
+  default:
+    name: face_recognition_network

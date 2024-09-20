@@ -1,0 +1,14 @@
+Collecting face-recognition-models
+  Downloading face_recognition_models-0.3.0.tar.gz (100.1 MB)
+     -------------------------------------- 100.1/100.1 MB 1.4 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Building wheels for collected packages: face-recognition-models
+  Building wheel for face-recognition-models (setup.py): started
+  Building wheel for face-recognition-models (setup.py): still running...
+  Building wheel for face-recognition-models (setup.py): finished with status 'done'
+  Created wheel for face-recognition-models: filename=face_recognition_models-0.3.0-py2.py3-none-any.whl size=100566178 sha256=7c7a9dfadeb47e402f28f578862d31cef49019726a84aac64f4c46412f6ac8c5
+  Stored in directory: c:\users\siya\appdata\local\pip\cache\wheels\04\52\ec\9355da79c29f160b038a20c784db2803c2f9fa2c8a462c176a
+Successfully built face-recognition-models
+Installing collected packages: face-recognition-models
+Successfully installed face-recognition-models-0.3.0

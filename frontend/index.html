@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition App</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #result, #userResult {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Face Recognition App</h1>
+    
+    <h2>Face Recognition</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="recognizeFace()">Recognize Face</button>
+    <div id="result"></div>
+
+    <h2>User Management</h2>
+    <input type="text" id="nameInput" placeholder="Name">
+    <input type="email" id="emailInput" placeholder="Email">
+    <button onclick="createUser()">Create User</button>
+    <input type="number" id="userIdInput" placeholder="User ID">
+    <button onclick="getUser()">Get User</button>
+    <div id="userResult"></div>
+
+    <script>
+        async function recognizeFace() {
+            const imageInput = document.getElementById('imageInput');
+            const resultDiv = document.getElementById('result');
+
+            if (!imageInput.files || imageInput.files.length === 0) {
+                resultDiv.innerHTML = 'Please select an image.';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', imageInput.files[0]);
+
+            try {
+                const response = await axios.post('http://localhost:8000/recognize', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                const results = response.data.results;
+                let resultHtml = '<h3>Recognition Results:</h3>';
+                results.forEach(result => {
+                    resultHtml += `<p>Name: ${result.name}, Confidence: ${(result.confidence * 100).toFixed(2)}%</p>`;
+                });
+                resultDiv.innerHTML = resultHtml;
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = 'An error occurred during face recognition.';
+            }
+        }
+
+        async function createUser() {
+            const nameInput = document.getElementById('nameInput');
+            const emailInput = document.getElementById('emailInput');
+            const userResultDiv = document.getElementById('userResult');
+
+            try {
+                const response = await axios.post('http://localhost:8001/users', {
+                    name: nameInput.value,
+                    email: emailInput.value
+                });
+
+                userResultDiv.innerHTML = `<h3>User Created:</h3><p>ID: ${response.data.id}, Name: ${response.data.name}, Email: ${response.data.email}</p>`;
+            } catch (error) {
+                console.error('Error:', error);
+                userResultDiv.innerHTML = 'An error occurred while creating the user.';
+            }
+        }
+
+        async function getUser() {
+            const userIdInput = document.getElementById('userIdInput');
+            const userResultDiv = document.getElementById('userResult');
+
+            try {
+                const response = await axios.get(`http://localhost:8001/users/${userIdInput.value}`);
+                userResultDiv.innerHTML = `<h3>User Details:</h3><p>ID: ${response.data.id}, Name: ${response.data.name}, Email: ${response.data.email}</p>`;
+            } catch (error) {
+                console.error('Error:', error);
+                userResultDiv.innerHTML = 'An error occurred while fetching the user.';
+            }
+        }
+    </script>
+</body>
+</html>
