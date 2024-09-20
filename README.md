@@ -19,6 +19,7 @@ This project is a microservices-based face recognition attendance system. It con
 │   │   └── analytics
 │   └── api_gateway
 ├── docker-compose.yml
+├── ERROR_HANDLING_AND_LOGGING_GUIDE.md
 └── README.md
 ```
 
@@ -70,12 +71,18 @@ This project is a microservices-based face recognition attendance system. It con
 
 For detailed API documentation, refer to the `api_contracts.md` file in the root directory.
 
+## Error Handling and Logging
+
+We have implemented comprehensive error handling and logging across all microservices. For details on how this is implemented and how to maintain it, please refer to the `ERROR_HANDLING_AND_LOGGING_GUIDE.md` file in the root directory.
+
 ## Development
 
 To make changes to the services:
 
 1. Modify the code in the respective service directories.
-2. Rebuild and restart the services:
+2. Implement error handling and logging as described in the ERROR_HANDLING_AND_LOGGING_GUIDE.md.
+3. Update the API contracts in api_contracts.md if you've made any changes to the API.
+4. Rebuild and restart the services:
    ```
    docker-compose up --build
    ```
@@ -93,15 +100,16 @@ To test other services, use the frontend UI or send requests directly to the API
 
 If you encounter any issues:
 
-1. Ensure all containers are running:
-   ```
-   docker-compose ps
-   ```
-2. Check container logs:
+1. Check the logs for each service:
    ```
    docker-compose logs <service_name>
    ```
-3. Restart the services:
+2. Ensure all containers are running:
+   ```
+   docker-compose ps
+   ```
+3. Verify that all required environment variables are set in the `.env` file.
+4. Restart the services:
    ```
    docker-compose down
    docker-compose up --build
@@ -113,6 +121,7 @@ If you encounter any issues:
 - Ensure to use strong, unique passwords and keep the SECRET_KEY secure.
 - Implement proper input validation and sanitization in all services.
 - Use HTTPS for all communications in a production environment.
+- Regularly update dependencies to patch any security vulnerabilities.
 
 ## Contributing
 
