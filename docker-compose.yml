@@ -12,6 +12,7 @@ services:
       - attendance
       - notification
       - analytics
+      - frontend
     environment:
       - FACE_RECOGNITION_URL=http://face_recognition:8000
       - USER_MANAGEMENT_URL=http://user_management:8000
@@ -19,6 +20,11 @@ services:
       - ATTENDANCE_URL=http://attendance:8000
       - NOTIFICATION_URL=http://notification:8000
       - ANALYTICS_URL=http://analytics:8000
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3001:3001"
 
   face_recognition:
     build: ./backend/services/face_recognition
