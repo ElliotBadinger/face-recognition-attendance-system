@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+
+# Logs
+*.log
+
+# Database
+*.sqlite3
+
+# Temporary files
+*.tmp
+
+# Known faces (to avoid committing personal images)
+frontend/known_faces/*
+!frontend/known_faces/.gitkeep
