@@ -16,20 +16,20 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Proxy middleware options
 const options = {
-  target: 'http://localhost', // target host
   changeOrigin: true, // needed for virtual hosted sites
   ws: true, // proxy websockets
 };
 
 // Create the proxy middleware
-const faceRecognitionProxy = createProxyMiddleware(options);
-const userManagementProxy = createProxyMiddleware(options);
-const authenticationProxy = createProxyMiddleware(options);
-const attendanceProxy = createProxyMiddleware(options);
-const notificationProxy = createProxyMiddleware(options);
-const analyticsProxy = createProxyMiddleware(options);
+const createServiceProxy = (target) => createProxyMiddleware({...options, target});
+
+const faceRecognitionProxy = createServiceProxy('http://face_recognition:8000');
+const userManagementProxy = createServiceProxy('http://user_management:8000');
+const authenticationProxy = createServiceProxy('http://authentication:8000');
+const attendanceProxy = createServiceProxy('http://attendance:8000');
+const notificationProxy = createServiceProxy('http://notification:8000');
+const analyticsProxy = createServiceProxy('http://analytics:8000');
 
 // Proxy routes
 app.use('/face-recognition', faceRecognitionProxy);
